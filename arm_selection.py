@@ -15,3 +15,11 @@ class ArmSelection():
         for i in range(self.N):
             self.arms.append(i + 1)
 
+
+    def get_uniform_distribution_reward(self, arm: int) -> float:
+        
+        return np.random.uniform(0, arm)   # arm 1 will be uniformly distributed in [0, 1] and arm 2 may be uniformly distributed in [0, 2], etc.
+
+    
+    def get_arms(self):
+        return self.arms
