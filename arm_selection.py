@@ -60,7 +60,7 @@ class ArmSelection():
                 average_arm_reward[arm_index] = arm_reward[arm_index] / \
                     arm_count[arm_index]
                 total_reward += reward
-                best_reward += arm_index
+                best_reward += arm_index + 1
 
             for y in range(m[x], T):            # exploit the remaining T - m[x] times
                 arm_index = average_arm_reward.index(max(average_arm_reward))
@@ -71,7 +71,7 @@ class ArmSelection():
                 average_arm_reward[arm_index] = arm_reward[arm_index] / \
                     arm_count[arm_index]
                 total_reward += reward
-                best_reward += arm_index
+                best_reward += arm_index + 1 
 
             average_reward_and_regret_pair.append(
                 [total_reward/T, (best_reward - total_reward)/T])
@@ -100,7 +100,7 @@ class ArmSelection():
                     average_arm_reward[arm_index] = arm_reward[arm_index] / \
                         arm_count[arm_index]
                     total_reward += reward
-                    best_reward += arm_index
+                    best_reward += arm_index + 1 
 
                 else:         # exploit
 
@@ -112,10 +112,10 @@ class ArmSelection():
                     average_arm_reward[arm_index] = arm_reward[arm_index] / \
                         arm_count[arm_index]
                     total_reward += reward
-                    best_reward += arm_index
+                    best_reward += arm_index + 1
 
             average_reward_and_regret_pair.append(
-                [total_reward/T, (best_reward - total_reward)/T,])
+                [total_reward/T, (best_reward - total_reward)/T])
         
         return average_reward_and_regret_pair
 
