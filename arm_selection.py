@@ -40,9 +40,9 @@ class ArmSelection():
 
         return total_reward/T, (best_reward - total_reward)/T
 
-    def get_average_rewarrd_and_regret_by_ETE_policy(self, T: int = 10000, m: List = [1, 10, 20, 30, 40, 50]) -> List:
+    def get_average_reward_and_regret_by_ETE_policy(self, T: int = 10000, m: List = [1, 10, 20, 30, 40, 50]) -> List:
 
-        return_list = []
+        average_reward_and_regret_pair = []
         for x in range(len(m)):
 
             total_reward = 0
@@ -72,7 +72,7 @@ class ArmSelection():
                 total_reward += reward
                 best_reward += arm_index
 
-            return_list.append(
+            average_reward_and_regret_pair.append(
                 [total_reward/T, (best_reward - total_reward)/T])
 
-        return return_list
+        return  average_reward_and_regret_pair
