@@ -1,4 +1,5 @@
 
+import math
 import random
 from typing import List
 import numpy as np
@@ -29,7 +30,7 @@ class ArmSelection():
     def random_arm_selection_policy(self):
         return np.random.randint(0, self.N)
 
-    def random_policy(self, T: int = 10000):
+    def random_policy(self, T: int = 10000) -> List:
 
         total_reward = 0
         best_reward = 0
@@ -39,7 +40,7 @@ class ArmSelection():
             total_reward += self.get_uniform_distribution_reward(arm_index)
             best_reward += arm_index
 
-        return total_reward/T, (best_reward - total_reward)/T
+        return [total_reward/T, (best_reward - total_reward)/T]
 
     def ETE_policy(self, T: int = 10000, m: List = [1, 10, 20, 30, 40, 50]) -> List:
 
@@ -93,29 +94,45 @@ class ArmSelection():
                 
                 if random.random() < epsilon:              # explore       
                     arm_index = self.random_arm_selection_policy()
-                    arm_count[arm_index] += 1
-                    reward = self.get_uniform_distribution_reward(arm_index)
-                    arm_reward[arm_index] += reward
-                    # calculate the empirical reward for each arm
-                    average_arm_reward[arm_index] = arm_reward[arm_index] / \
-                        arm_count[arm_index]
-                    total_reward += reward
-                    best_reward += arm_index + 1 
 
                 else:         # exploit
-
                     arm_index = average_arm_reward.index(max(average_arm_reward))
-                    arm_count[arm_index] += 1
-                    reward = self.get_uniform_distribution_reward(arm_index)
-                    arm_reward[arm_index] += reward
-                    # calculate the empirical reward for each arm
-                    average_arm_reward[arm_index] = arm_reward[arm_index] / \
-                        arm_count[arm_index]
-                    total_reward += reward
-                    best_reward += arm_index + 1
+                    
+                arm_count[arm_index] += 1
+                reward = self.get_uniform_distribution_reward(arm_index)
+                arm_reward[arm_index] += reward       
+                average_arm_reward[arm_index] = arm_reward[arm_index] / \
+                    arm_count[arm_index]
+                total_reward += reward
+                best_reward += arm_index + 1
 
             average_reward_and_regret_pair.append(
                 [total_reward/T, (best_reward - total_reward)/T])
         
         return average_reward_and_regret_pair
 
+    def adaptive_epsilon_greedy_policy(self, T: int = 10000) -> List:
+        
+        total_reward = 0
+        best_reward = 0
+        arm_count = [0 for i in range(self.N)]
+        arm_reward = [0 for i in range(self.N)]
+        average_arm_reward = [0 for i in range(self.N)]
+        for t in range(1,T+1):
+            if random.random() < (T*math.log(t)/t)**(1/3):              # explore
+                arm_index = self.random_arm_selection_policy()
+            else:                                             # exploit
+                arm_index = average_arm_reward.index(max(average_arm_reward))
+                
+            arm_count[arm_index] += 1
+            reward = self.get_uniform_distribution_reward(arm_index)
+            arm_reward[arm_index] += reward       
+            average_arm_reward[arm_index] = arm_reward[arm_index] / \
+                arm_count[arm_index]
+            total_reward += reward
+            best_reward += arm_index + 1
+        
+        return [total_reward/T, (best_reward - total_reward)/T]
+        
+                
+        
