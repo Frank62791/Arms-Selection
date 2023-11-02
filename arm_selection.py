@@ -29,7 +29,7 @@ class ArmSelection():
     def random_arm_selection_policy(self):
         return np.random.randint(0, self.N)
 
-    def get_average_rewarrd_and_regret_by_random_policy(self, T: int = 10000):
+    def random_policy(self, T: int = 10000):
 
         total_reward = 0
         best_reward = 0
@@ -41,7 +41,7 @@ class ArmSelection():
 
         return total_reward/T, (best_reward - total_reward)/T
 
-    def get_average_reward_and_regret_by_ETE_policy(self, T: int = 10000, m: List = [1, 10, 20, 30, 40, 50]) -> List:
+    def ETE_policy(self, T: int = 10000, m: List = [1, 10, 20, 30, 40, 50]) -> List:
 
         average_reward_and_regret_pair = []
         for x in range(len(m)):
@@ -79,7 +79,7 @@ class ArmSelection():
         return  average_reward_and_regret_pair
     
     
-    def get_average_reward_and_regret_by_greedy_policy(self, T: int = 10000, e: List = [ 0.1, 0.2, 0.3, 0.4, 0.5 ]) -> List:
+    def greedy_policy(self, T: int = 10000, e: List = [ 0.1, 0.2, 0.3, 0.4, 0.5 ]) -> List:
         
         average_reward_and_regret_pair = []
         for epsilon in e:
