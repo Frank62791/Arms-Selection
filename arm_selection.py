@@ -44,10 +44,11 @@ class ArmSelection():
             best_reward += arm_index
             reward_plot.append(total_reward/(x+1))
             regret_plot.append((best_reward - total_reward)/(x+1))
-        self.plot(T=T, plot_data=regret_plot,
-                  label="average regret", y_label="Regret")
+
         self.plot(T=T, plot_data=reward_plot,
-                  label="average cumulative reward", y_label="Reward")
+                  label="average cumulative reward", y_label="Reward", policy="random policy")
+        self.plot(T=T, plot_data=regret_plot,
+                  label="average regret", y_label="Regret", policy="random policy")
         return [total_reward/T, (best_reward - total_reward)/T]
 
     def ETE_policy(self, T: int = 10000, m: List = [1, 10, 20, 30, 40, 50]) -> List:
@@ -73,7 +74,7 @@ class ArmSelection():
                 total_reward += reward
                 best_reward += arm_index + 1
                 reward_plot.append(average_arm_reward[arm_index])
-                regret_plot.append((best_reward - total_reward)/y)
+                regret_plot.append((best_reward - total_reward)/(y+1))
 
             for y in range(m[x], T):            # exploit the remaining T - m[x] times
                 arm_index = average_arm_reward.index(max(average_arm_reward))
@@ -86,11 +87,11 @@ class ArmSelection():
                 total_reward += reward
                 best_reward += arm_index + 1
                 reward_plot.append(average_arm_reward[arm_index])
-                regret_plot.append((best_reward - total_reward)/y)
+                regret_plot.append((best_reward - total_reward)/(y+1))
             self.plot(
-                T=T, plot_data=regret_plot, label="average regret", y_label="Regret")
+                T=T, plot_data=reward_plot, label="average cumulative reward", y_label="Reward", policy="ETE policy")
             self.plot(
-                T=T, plot_data=reward_plot, label="average cumulative reward", y_label="Reward")
+                T=T, plot_data=regret_plot, label="average regret", y_label="Regret", policy="ETE policy")
             average_reward_and_regret_pair.append(
                 [total_reward/T, (best_reward - total_reward)/T])
 
@@ -126,12 +127,13 @@ class ArmSelection():
                 best_reward += arm_index + 1
 
                 reward_plot.append(average_arm_reward[arm_index])
-                regret_plot.append((best_reward - total_reward)/y)
+                regret_plot.append((best_reward - total_reward)/(y+1))
 
             self.plot(
-                T=T, plot_data=regret_plot, label="average regret", y_label="Regret")
+                T=T, plot_data=reward_plot, label="average cumulative reward", y_label="Reward", policy="greedy policy")
             self.plot(
-                T=T, plot_data=reward_plot, label="average cumulative reward", y_label="Reward")
+                T=T, plot_data=regret_plot, label="average regret", y_label="Regret", policy="greedy policy")
+
             average_reward_and_regret_pair.append(
                 [total_reward/T, (best_reward - total_reward)/T])
 
@@ -163,9 +165,9 @@ class ArmSelection():
             regret_plot.append((best_reward - total_reward)/t)
 
         self.plot(
-            T=T, plot_data=regret_plot, label="average regret", y_label="Regret")
+            T=T, plot_data=reward_plot, label="average cumulative reward", y_label="Reward", policy="adaptive epsilon greedy policy")
         self.plot(
-            T=T, plot_data=reward_plot, label="average cumulative reward", y_label="Reward")
+            T=T, plot_data=regret_plot, label="average regret", y_label="Regret", policy="adaptive epsilon greedy policy")
 
         return [total_reward/T, (best_reward - total_reward)/T]
 
@@ -193,7 +195,7 @@ class ArmSelection():
                 math.sqrt(2*math.log(t)/arm_count[arm_index])
             total_reward += reward
             best_reward += arm_index + 1
-            regret_plot.append((best_reward - total_reward)/t+1)
+            regret_plot.append((best_reward - total_reward)/t)
 
         for t in range(self.N+1, T+1):
 
@@ -209,21 +211,21 @@ class ArmSelection():
                 math.sqrt(2*math.log(t)/arm_count[arm_index])
             total_reward += reward
             best_reward += arm_index + 1
-            regret_plot.append((best_reward - total_reward)/t+1)
+            regret_plot.append((best_reward - total_reward)/t)
         self.plot(
-            T=T, plot_data=regret_plot, label="average regret", y_label="Regret")
+            T=T, plot_data=reward_plot, label="average cumulative reward", y_label="Reward", policy="upper confidence bound policy")
         self.plot(
-            T=T, plot_data=reward_plot, label="average cumulative reward", y_label="Reward")
+            T=T, plot_data=regret_plot, label="average regret", y_label="Regret", policy="upper confidence bound policy")
+
         return [total_reward/T, (best_reward - total_reward)/T]
 
-    # the Y-axis will be the upper bound and lower bound , while the X-axis will be the number of samples
-    def plot(self, T: int = 10000, plot_data: List = [], label: str = "undefined", y_label: str = "undefined"):
+    def plot(self, T: int = 10000, plot_data: List = [], label: str = "undefined", y_label: str = "undefined", policy: str = "undefined"):
 
         x = np.arange(T)
         plt.plot(x, plot_data, label=label)
         plt.xlabel('Number of Time: T')
         plt.ylabel(y_label)
-        plt.title(label + 'vs Number of Time: T')
+        plt.title(policy)
         plt.legend()
 
         # Show the graph
