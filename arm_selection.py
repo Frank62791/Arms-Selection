@@ -8,10 +8,13 @@ import matplotlib.pyplot as plt
 
 class ArmSelection():
 
-    def __init__(self, N: int = 10):
+    def __init__(self, N: int = 10, T: int = 10000):
         self.N = N
         self.arms = []
         self.create_arms()
+        self.x_axia = np.arange(T)
+        self.T = T
+        self.fig, (self.reward_plot, self.regret_plot) = plt.subplots(1, 2)
 
     def create_arms(self):
         for i in range(self.N):
@@ -19,7 +22,7 @@ class ArmSelection():
 
     def get_uniform_distribution_reward(self, arm: int) -> float:
 
-        # arm 1 will be uniformly distributed in [0, 1] and arm 2 may be uniformly distributed in [0, 2], etc.
+        # arm 1 will be uniformly distributed in [0, 1] and arm 2 will be uniformly distributed in [0, 2], etc.
         return np.random.uniform(0, arm+1)
 
     def get_average_reward(self, arm: int, N: int = 5000) -> float:
@@ -31,13 +34,13 @@ class ArmSelection():
     def random_arm_selection_policy(self):
         return np.random.randint(0, self.N)
 
-    def random_policy(self, T: int = 10000) -> List:
+    def random_policy(self) -> List:
 
         total_reward = 0
         best_reward = 0
         reward_plot = []
         regret_plot = []
-        for x in range(T):
+        for x in range(self.T):
             # get the arm from the random arm selection policy
             arm_index = self.random_arm_selection_policy()
             total_reward += self.get_uniform_distribution_reward(arm_index)
@@ -45,15 +48,15 @@ class ArmSelection():
             reward_plot.append(total_reward/(x+1))
             regret_plot.append((best_reward - total_reward)/(x+1))
 
-        self.plot(T=T, plot_data=reward_plot,
-                  label="average cumulative reward", y_label="Reward", policy="random policy")
-        self.plot(T=T, plot_data=regret_plot,
-                  label="average regret", y_label="Regret", policy="random policy")
-        return [total_reward/T, (best_reward - total_reward)/T]
+        self.reward_plot.plot(self.x_axia, reward_plot,
+                              label="random")
+        self.regret_plot.plot(self.x_axia, regret_plot,
+                              label="random")
+        print("random policy average_reward: " + str(total_reward/self.T) + ", average_regret: " +
+              str((best_reward - total_reward)/self.T))
 
-    def ETE_policy(self, T: int = 10000, m: List = [1, 10, 20, 30, 40, 50]) -> List:
+    def ETE_policy(self, m: List = [1, 10, 20, 30, 40, 50]) -> List:
 
-        average_reward_and_regret_pair = []
         for x in range(len(m)):
 
             total_reward = 0
@@ -76,7 +79,7 @@ class ArmSelection():
                 reward_plot.append(average_arm_reward[arm_index])
                 regret_plot.append((best_reward - total_reward)/(y+1))
 
-            for y in range(m[x], T):            # exploit the remaining T - m[x] times
+            for y in range(m[x], self.T):            # exploit the remaining T - m[x] times
                 arm_index = average_arm_reward.index(max(average_arm_reward))
                 arm_count[arm_index] += 1
                 reward = self.get_uniform_distribution_reward(arm_index)
@@ -88,18 +91,16 @@ class ArmSelection():
                 best_reward += arm_index + 1
                 reward_plot.append(average_arm_reward[arm_index])
                 regret_plot.append((best_reward - total_reward)/(y+1))
-            self.plot(
-                T=T, plot_data=reward_plot, label="average cumulative reward", y_label="Reward", policy="ETE policy")
-            self.plot(
-                T=T, plot_data=regret_plot, label="average regret", y_label="Regret", policy="ETE policy")
-            average_reward_and_regret_pair.append(
-                [total_reward/T, (best_reward - total_reward)/T])
+            self.reward_plot.plot(self.x_axia, reward_plot,
+                                  label="ETE m=" + str(m[x]) + "")
+            self.regret_plot.plot(self.x_axia, regret_plot,
+                                  label="ETE m=" + str(m[x]) + "")
 
-        return average_reward_and_regret_pair
+            print("ETE m=" + str(m[x]) + " average_reward: " + str(total_reward/self.T) + ", average_regret: " +
+                  str((best_reward - total_reward)/self.T))
 
-    def greedy_policy(self, T: int = 10000, e: List = [0.1, 0.2, 0.3, 0.4, 0.5]) -> List:
+    def greedy_policy(self, e: List = [0.1, 0.2, 0.3, 0.4, 0.5]) -> List:
 
-        average_reward_and_regret_pair = []
         for epsilon in e:
 
             total_reward = 0
@@ -109,7 +110,7 @@ class ArmSelection():
             average_arm_reward = [0 for i in range(self.N)]
             reward_plot = []
             regret_plot = []
-            for y in range(T):
+            for y in range(self.T):
 
                 if random.random() < epsilon:              # explore
                     arm_index = self.random_arm_selection_policy()
@@ -129,17 +130,14 @@ class ArmSelection():
                 reward_plot.append(average_arm_reward[arm_index])
                 regret_plot.append((best_reward - total_reward)/(y+1))
 
-            self.plot(
-                T=T, plot_data=reward_plot, label="average cumulative reward", y_label="Reward", policy="greedy policy")
-            self.plot(
-                T=T, plot_data=regret_plot, label="average regret", y_label="Regret", policy="greedy policy")
+            self.reward_plot.plot(self.x_axia, reward_plot,
+                                  label="greedy e=" + str(epsilon) + "")
+            self.regret_plot.plot(self.x_axia, regret_plot,
+                                  label="greedy e=" + str(epsilon) + "")
+            print("greedy e=" + str(epsilon) + " average_reward: " + str(total_reward/self.T) + ", average_regret: " +
+                  str((best_reward - total_reward)/self.T))
 
-            average_reward_and_regret_pair.append(
-                [total_reward/T, (best_reward - total_reward)/T])
-
-        return average_reward_and_regret_pair
-
-    def adaptive_epsilon_greedy_policy(self, T: int = 10000) -> List:
+    def adaptive_epsilon_greedy_policy(self) -> List:
 
         total_reward = 0
         best_reward = 0
@@ -148,8 +146,8 @@ class ArmSelection():
         average_arm_reward = [0 for i in range(self.N)]
         reward_plot = []
         regret_plot = []
-        for t in range(1, T+1):
-            if random.random() < (T*math.log(t)/t)**(1/3):              # explore
+        for t in range(1, self.T+1):
+            if random.random() < (self.T*math.log(t)/t)**(1/3):              # explore
                 arm_index = self.random_arm_selection_policy()
             else:                                             # exploit
                 arm_index = average_arm_reward.index(max(average_arm_reward))
@@ -163,15 +161,14 @@ class ArmSelection():
             best_reward += arm_index + 1
             reward_plot.append(average_arm_reward[arm_index])
             regret_plot.append((best_reward - total_reward)/t)
+        self.reward_plot.plot(self.x_axia, reward_plot,
+                              label="adaptive epsilon greedy")
+        self.regret_plot.plot(self.x_axia, regret_plot,
+                              label="adaptive epsilon greedy")
+        print("adaptive epsilon greedy average_reward: " + str(total_reward/self.T) + ", average_regret: " +
+              str((best_reward - total_reward)/self.T))
 
-        self.plot(
-            T=T, plot_data=reward_plot, label="average cumulative reward", y_label="Reward", policy="adaptive epsilon greedy policy")
-        self.plot(
-            T=T, plot_data=regret_plot, label="average regret", y_label="Regret", policy="adaptive epsilon greedy policy")
-
-        return [total_reward/T, (best_reward - total_reward)/T]
-
-    def upper_confidence_bound_policy(self, T: int = 10000) -> List:
+    def upper_confidence_bound_policy(self) -> List:
 
         total_reward = 0
         arm_count = [0 for i in range(self.N)]
@@ -197,7 +194,7 @@ class ArmSelection():
             best_reward += arm_index + 1
             regret_plot.append((best_reward - total_reward)/t)
 
-        for t in range(self.N+1, T+1):
+        for t in range(self.N+1, self.T+1):
 
             arm_index = upper_bound.index(max(upper_bound))
             reward = self.get_uniform_distribution_reward(arm_index)
@@ -212,21 +209,27 @@ class ArmSelection():
             total_reward += reward
             best_reward += arm_index + 1
             regret_plot.append((best_reward - total_reward)/t)
-        self.plot(
-            T=T, plot_data=reward_plot, label="average cumulative reward", y_label="Reward", policy="upper confidence bound policy")
-        self.plot(
-            T=T, plot_data=regret_plot, label="average regret", y_label="Regret", policy="upper confidence bound policy")
+        self.reward_plot.plot(self.x_axia, reward_plot,
+                              label="upper confidence bound")
+        self.regret_plot.plot(self.x_axia, regret_plot,
+                              label="upper confidence bound")
+        print("upper confidence bound average_reward: " + str(total_reward/self.T) + ", average_regret: " +
+              str((best_reward - total_reward)/self.T))
 
-        return [total_reward/T, (best_reward - total_reward)/T]
+    def save_figure(self, file_name: str = "undefined"):
 
-    def plot(self, T: int = 10000, plot_data: List = [], label: str = "undefined", y_label: str = "undefined", policy: str = "undefined"):
+        self.reward_plot.set_xlabel('Number of Time: T')
+        self.reward_plot.set_ylabel("reward")
+        self.reward_plot.set_title(
+            "average cumulative reward T = " + str(self.T) + "")
+        self.reward_plot.legend()
 
-        x = np.arange(T)
-        plt.plot(x, plot_data, label=label)
-        plt.xlabel('Number of Time: T')
-        plt.ylabel(y_label)
-        plt.title(policy)
-        plt.legend()
+        self.regret_plot.set_xlabel('Number of Time: T')
+        self.regret_plot.set_ylabel("regret")
+        self.regret_plot.set_title("average regret T = " + str(self.T) + " ")
+        self.regret_plot.legend()
 
-        # Show the graph
+        plt.savefig(file_name + ".png")
         plt.show()
+
+      #  plt.show()
